@@ -108,6 +108,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_RATES': {
+        'verify_2fa_token': '5/min',
+    },
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -137,3 +143,5 @@ LOGIN_REDIRECT_URL = 'two_factor:profile'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 TWO_FACTOR_SMS_GATEWAY = 'my_auth.gateways.SMSConsole'
+
+# TWO_FACTOR_REMEMBER_COOKIE_AGE = 3600 * 24 * 30

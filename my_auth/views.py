@@ -11,15 +11,17 @@ from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
 from rest_framework.viewsets import GenericViewSet
-from two_factor.forms import AuthenticationTokenForm, BackupTokenForm
+from two_factor.forms import BackupTokenForm
+from two_factor.views.utils import IdempotentSessionWizardView, LoginStorage
 from two_factor.views.core import LoginView
-from two_factor.views.utils import LoginStorage
+from two_factor.plugins.email.forms import AuthenticationTokenForm
 
 from my_auth.forms import DeviceSelectionForm
 from my_auth.models import SMSDevice
 from my_auth.registry import registry, EmailMethod, SMSMethod
 from my_auth.serializers import DeviceMethodSerializer, EmailDeviceSerializer, DeviceValidationSerializer, \
     SMSDeviceSerializer
+from my_auth.throttles import VerifyDeviceThrottle
 
 
 class DeviceStorage(LoginStorage):
@@ -119,6 +121,13 @@ class CustomLoginView(LoginView):
             }
         return super().get_form_kwargs(step)
 
+    def get_form(self, step=None, **kwargs):
+        form = IdempotentSessionWizardView.get_form(self, step=step, **kwargs)
+        if self.show_timeout_error:
+            form.cleaned_data = getattr(form, 'cleaned_data', {})
+            form.add_error(None, ValidationError(_('Your session has timed out. Please login again.')))
+        return form
+
 
 class DeviceMethodViewSet(GenericViewSet,
                           mixins.ListModelMixin):
@@ -200,6 +209,7 @@ class SetupDeviceCompleteViewSet(GenericViewSet,
                                  DeviceMixin):
     serializer_class = DeviceValidationSerializer
     permission_classes = [IsAuthenticated]
+    throttle_classes = [VerifyDeviceThrottle]
 
     def get_queryset(self):
         return None
