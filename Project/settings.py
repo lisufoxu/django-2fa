@@ -144,4 +144,4 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 TWO_FACTOR_SMS_GATEWAY = 'my_auth.gateways.SMSConsole'
 
-# TWO_FACTOR_REMEMBER_COOKIE_AGE = 3600 * 24 * 30
+TWO_FACTOR_REMEMBER_COOKIE_AGE = 3600 * 24 * 30

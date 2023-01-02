@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django_otp.plugins.otp_email.models import EmailDevice
 from rest_framework import status
+from two_factor.views.core import REMEMBER_COOKIE_PREFIX
 
 from my_auth.models import SMSDevice
 from my_auth.registry import registry
@@ -103,13 +104,17 @@ class Login2FaTestCase(TestCase):
             },
         )
 
-    def login_token(self, token):
-        self.client.post(
+    def login_token(self, token, remember=False):
+        data = {
+            'token-otp_token': token,
+            'custom_login_view-current_step': 'token',
+        }
+        if remember:
+            data['token-remember'] = 'on'
+
+        return self.client.post(
             self.auth_url,
-            data={
-                'token-otp_token': token,
-                'custom_login_view-current_step': 'token',
-            },
+            data=data,
         )
 
     def login_select_device(self, device):
@@ -145,5 +150,15 @@ class Login2FaTestCase(TestCase):
         self.assertEqual(get_user(self.client).is_authenticated, True)
 
     def test_remembered_device(self):
-        # login does not require
-        pass
+        self.device1 = EmailDevice.objects.create(user=self.user, name='name1', email=self.email, confirmed=True)
+        self.login_credentials()
+        self.device1.refresh_from_db()
+        response = self.login_token(self.device1.token, remember=True)
+        for key, value in response.cookies.items():
+            if key.startswith(REMEMBER_COOKIE_PREFIX) and value:
+                break
+        self.client.logout()
+        self.client.cookies[key] = value
+        self.assertEqual(get_user(self.client).is_authenticated, False)
+        self.login_credentials()
+        self.assertEqual(get_user(self.client).is_authenticated, True)
