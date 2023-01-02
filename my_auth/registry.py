@@ -1,6 +1,8 @@
 from django.utils.translation import gettext_lazy as _
 from django_otp.plugins.otp_email.models import EmailDevice
 
+from my_auth.models import SMSDevice
+
 
 EMAIL_CODE = 'email'
 SMS_CODE = 'sms'
@@ -30,11 +32,18 @@ class EmailMethod(MethodBase):
         return device
 
 
+class SMSMethod(MethodBase):
+    model = SMSDevice
+    code = SMS_CODE
+    verbose_name = _('SMS')
+
+
 class MethodRegistry:
     _methods = []
 
     def __init__(self):
         self.register(EmailMethod())
+        self.register(SMSMethod())
 
     def register(self, method):
         self._methods.append(method)

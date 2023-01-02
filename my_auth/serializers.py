@@ -2,6 +2,8 @@ from rest_framework import serializers
 from two_factor.utils import totp_digits
 
 from django_otp.plugins.otp_email.models import EmailDevice
+
+from my_auth.models import SMSDevice
 from my_auth.registry import EMAIL_CODE
 
 
@@ -17,6 +19,16 @@ class EmailDeviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailDevice
         fields = ['id', 'name', 'email', 'code', 'confirmed', 'valid_until', 'persistent_id']
+        read_only_fields = ['confirmed', 'valid_until']
+
+
+class SMSDeviceSerializer(serializers.ModelSerializer):
+    code = serializers.ReadOnlyField(default=EMAIL_CODE)
+    phone_number = serializers.CharField(required=True, max_length=20)
+
+    class Meta:
+        model = SMSDevice
+        fields = ['id', 'name', 'phone_number', 'code', 'confirmed', 'valid_until', 'persistent_id']
         read_only_fields = ['confirmed', 'valid_until']
 
 

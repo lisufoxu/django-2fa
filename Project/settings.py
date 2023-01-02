@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django_otp.plugins.otp_totp',
     'django_otp.plugins.otp_email',  # <- if you want email capability.
     'two_factor',
-    'two_factor.plugins.phonenumber',  # <- if you want phone number capability.
     'two_factor.plugins.email',  # <- if you want email capability.
     'rest_framework',
     'my_auth',
@@ -136,3 +135,5 @@ LOGIN_URL = 'two_factor:login'
 LOGIN_REDIRECT_URL = 'two_factor:profile'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+TWO_FACTOR_SMS_GATEWAY = 'my_auth.gateways.SMSConsole'

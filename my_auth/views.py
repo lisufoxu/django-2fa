@@ -16,8 +16,10 @@ from two_factor.views.core import LoginView
 from two_factor.views.utils import LoginStorage
 
 from my_auth.forms import DeviceSelectionForm
-from my_auth.registry import registry, EmailMethod
-from my_auth.serializers import DeviceMethodSerializer, EmailDeviceSerializer, DeviceValidationSerializer
+from my_auth.models import SMSDevice
+from my_auth.registry import registry, EmailMethod, SMSMethod
+from my_auth.serializers import DeviceMethodSerializer, EmailDeviceSerializer, DeviceValidationSerializer, \
+    SMSDeviceSerializer
 
 
 class DeviceStorage(LoginStorage):
@@ -132,7 +134,8 @@ class DeviceMethodViewSet(GenericViewSet,
 
 class DeviceMixin:
     serializer_map = {
-        EmailDevice: EmailDeviceSerializer
+        EmailDevice: EmailDeviceSerializer,
+        SMSDevice: SMSDeviceSerializer,
     }
 
 
@@ -180,6 +183,15 @@ class SetupEmailDeviceViewSet(GenericViewSet,
     _method = EmailMethod
     queryset = EmailDevice.objects
     serializer_class = EmailDeviceSerializer
+    permission_classes = [IsAuthenticated, HasObjectPermission]
+
+
+class SetupSMSDeviceViewSet(GenericViewSet,
+                            mixins.DestroyModelMixin,
+                            CreateDeviceMixin):
+    _method = SMSMethod
+    queryset = SMSDevice.objects
+    serializer_class = SMSDeviceSerializer
     permission_classes = [IsAuthenticated, HasObjectPermission]
 
 
